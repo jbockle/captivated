@@ -7,7 +7,7 @@ import (
 	"github.com/google/go-github/v57/github"
 	"github.com/jbockle/captivated/server/config"
 	"github.com/jbockle/captivated/server/models"
-	"github.com/jbockle/captivated/server/publisher"
+	"github.com/jbockle/captivated/server/services"
 )
 
 func NewEventHandler(response http.ResponseWriter, request *http.Request) {
@@ -28,5 +28,9 @@ func NewEventHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	publisher.Publish(request.Context(), &event)
+	log.Println("Publishing payload event", eventType, hookId)
+	err = services.Publisher.Publish(request.Context(), &event)
+	if err != nil {
+		log.Println("Error publishing payload", eventType, hookId, err)
+	}
 }

@@ -36,6 +36,6 @@ func Init() {
 
 func assertNotEmpty(item string, envKey string) {
 	if len(item) == 0 {
-		log.Fatalln(fmt.Sprintf("Environment variable '%v' is undefined", envKey))
+		panic(fmt.Sprintf("Environment variable '%v' is undefined", envKey))
 	}
 }
