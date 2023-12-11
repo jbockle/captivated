@@ -21,9 +21,9 @@ type GitHubEvent struct {
 	// the unique identifier of the resource where the webhook was created
 	TargetId string `json:"targetId"`
 	// the event data
-	Data interface{} `json:"data"`
+	Data interface{} `json:"data,omitempty"`
 	// indicates this event was added to blob storage as its size was too large to include as an event, event.data is nil
-	IsReference bool `json:"isReference"`
+	IsReference bool `json:"isReference,omitempty"` // TODO should change this to an address
 }
 
 type ValidationFailed struct {
