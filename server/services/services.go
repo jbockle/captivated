@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
-	"log"
+	"log/slog"
 	"time"
 
 	"github.com/jbockle/captivated/server/models"
@@ -23,7 +23,7 @@ var (
 )
 
 func Init() {
-	log.Println("Initializing services")
+	slog.Debug("Initializing services")
 	Broker = CreateBroker()
 	Storage = CreateStorage()
 	Publisher = &PublisherImpl{}
@@ -56,9 +56,9 @@ func StartDeleteExpiredTask() {
 		for {
 			select {
 			case <-ticker.C:
-				log.Println("Starting task Storage.DeleteExpired")
+				slog.Debug("Starting task Storage.DeleteExpired")
 				if err := Storage.DeleteExpired(); err != nil {
-					log.Println("Task Storage.DeleteExpired failed:", err)
+					slog.Error("Task Storage.DeleteExpired failed:", "err", err)
 				}
 			}
 		}

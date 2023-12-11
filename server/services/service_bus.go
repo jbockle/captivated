@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
 	"github.com/jbockle/captivated/server/config"
@@ -15,9 +15,11 @@ type ServiceBusBroker struct {
 }
 
 func (broker *ServiceBusBroker) Send(ctx context.Context, event *models.GitHubEvent) (err error) {
+	slog.Debug("Sending event to service bus", "event", event)
+
 	body, err := event.ToBytes()
 	if err != nil {
-		log.Println("Error converting event to bytes:", event, err)
+		slog.Error("Error converting event to bytes", "event", event, "err", err)
 		return
 	}
 
@@ -34,6 +36,7 @@ func (broker *ServiceBusBroker) Send(ctx context.Context, event *models.GitHubEv
 
 	err = broker.sender.SendMessage(ctx, message, nil)
 	if errors.Is(err, azservicebus.ErrMessageTooLarge) {
+		slog.Error("Message exceeded max size", "event", event, "err", err)
 		return ErrMsgTooLarge
 	}
 	return

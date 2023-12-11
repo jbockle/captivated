@@ -2,14 +2,34 @@ package server
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/jbockle/captivated/server/routes"
 )
 
-func Serve() error {
+func Serve() {
 	router := mux.NewRouter()
+	router.
+		Use(func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				defer func() {
+					if err := recover(); err != nil {
+						http.Error(w, fmt.Sprintf("An error occurred: %+v", err), http.StatusInternalServerError)
+					}
+				}()
+
+				slog.Debug(
+					"request received",
+					"path", r.URL.Path,
+					"method", r.Method,
+					"length", r.ContentLength,
+				)
+
+				next.ServeHTTP(w, r)
+			})
+		})
 	router.
 		HandleFunc("/", routes.HomeHandler).
 		Methods(http.MethodGet)
@@ -22,8 +42,8 @@ func Serve() error {
 
 	http.Handle("/", router)
 
-	fmt.Println("listening http://localhost:8080")
-	err := http.ListenAndServe(":8080", nil)
-
-	return err
+	slog.Info("started http server", "address", "http://localhost:8080")
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		panic(err)
+	}
 }

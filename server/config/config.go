@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 )
 
@@ -20,7 +20,7 @@ var (
 )
 
 func Init() {
-	log.Println("Initializing config")
+	slog.Debug("Initializing config")
 
 	assertNotEmpty(AsbConnectionString, env_acs_key)
 	assertNotEmpty(BlobConnectionString, env_bcs_key)

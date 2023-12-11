@@ -2,9 +2,8 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -24,7 +23,7 @@ type BlobStorage struct {
 func (storage *BlobStorage) Save(ctx context.Context, event *models.GitHubEvent) (err error) {
 	bytes, err := event.ToBytes()
 	if err != nil {
-		log.Println("Error converting event to bytes:", event, err)
+		slog.Error("Error converting event to bytes", "event", event, "err", err)
 		return
 	}
 
@@ -33,7 +32,7 @@ func (storage *BlobStorage) Save(ctx context.Context, event *models.GitHubEvent)
 	if _, err = blobClient.UploadBuffer(ctx, bytes, &azblob.UploadBufferOptions{
 		HTTPHeaders: &blob.HTTPHeaders{BlobContentType: &contentType},
 	}); err != nil {
-		log.Println("Error uploading blob:", err)
+		slog.Error("Error uploading blob", "err", err)
 	}
 
 	return
@@ -76,12 +75,12 @@ func (storage *BlobStorage) DeleteExpired() error {
 		for _, blob := range response.Segment.BlobItems {
 			blobAge := now.Sub(*blob.Properties.CreationTime)
 			if checkExpired(blobAge) {
-				log.Println(fmt.Sprintf("deleting blob %v as its age is %s", blob.Name, blobAge))
+				slog.Debug("deleting blob", "name", blob.Name, "age", blobAge)
 				_, err = storage.container.
 					NewBlobClient(*blob.Name).
 					Delete(context.Background(), nil)
 				if err != nil {
-					log.Println(fmt.Sprintf("deleting blob %v failed: %+v", blob.Name, err))
+					slog.Error("deleting blob failed", "name", blob.Name, "err", err)
 					return err
 				}
 			}
