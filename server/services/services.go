@@ -45,8 +45,8 @@ type StorageService interface {
 	DeleteExpired() error
 }
 
-func isExpired(t, from *time.Time) bool {
-	return t.After(from.AddDate(0, 0, ttlDays))
+func checkExpired(age time.Duration) bool {
+	return age > ttl
 }
 
 func StartDeleteExpiredTask() {

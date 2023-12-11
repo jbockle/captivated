@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -73,11 +74,14 @@ func (storage *BlobStorage) DeleteExpired() error {
 		}
 
 		for _, blob := range response.Segment.BlobItems {
-			if isExpired(blob.Properties.CreationTime, &now) {
+			blobAge := now.Sub(*blob.Properties.CreationTime)
+			if checkExpired(blobAge) {
+				log.Println(fmt.Sprintf("deleting blob %v as its age is %s", blob.Name, blobAge))
 				_, err = storage.container.
 					NewBlobClient(*blob.Name).
 					Delete(context.Background(), nil)
 				if err != nil {
+					log.Println(fmt.Sprintf("deleting blob %v failed: %+v", blob.Name, err))
 					return err
 				}
 			}
