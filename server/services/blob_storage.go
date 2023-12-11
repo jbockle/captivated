@@ -59,6 +59,8 @@ func (storage *BlobStorage) Stream(ctx context.Context, eventId string, to io.Wr
 func (storage *BlobStorage) DeleteExpired() error {
 	now := time.Now().UTC()
 	maxResults := int32(100)
+
+	// TODO use container.FilterBlobs
 	pager := storage.container.NewListBlobsFlatPager(&container.ListBlobsFlatOptions{
 		Include:    container.ListBlobsInclude{},
 		MaxResults: &maxResults,
